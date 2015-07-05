@@ -24,7 +24,7 @@
  *
  * @package PHP Hooks
  */
-  class hooks
+  class rifHooks
   {
     /**
      * $filters holds list of hooks

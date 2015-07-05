@@ -8,29 +8,21 @@ class riframework{
 
 	public function framework(){
 		try{
+			$rifCore = new rifCore();
 			$rifLng = new rifLng(LANG);
-			$config = new rifConfig($rifLng);
-			$hooks = new hooks($rifLng);
-			$request = new rifRequest($rifLng);
-
-			
-
-			$routing = new rifRouting($rifLng, $request, $config->routes);
-
-
-			$events = new rifEvent();
-			if($routing->hasError()){
+			$rifRequest = new rifRequest($rifLng);
+			$rifCore->_setLng($rifLng);
+			$rifCore->_setConfig(new rifConfigLoader($rifLng));
+			$rifCore->_setRouting(new rifRouting($rifLng, $rifRequest,$rifCore->getConfig()->getConfig()->getRoutes()));
+			$rifCore->_setHooks(new rifHooks($rifLng));
+			$rifCore->_setEvents(new rifEvent());
+			if($rifCore->getRouting()->getError()){
 				rifException::routingException(array(
-					'message'=> $rifLng->__("Routing error : __err__",array("err"=>$routing->getError()))
+					'message'=> $rifLng->__("Routing error : __err__",array("err"=>$rifCore->getRouting()->getErrorMsg()))
 				));
 			}
-			$core = new rifCore($config,$rifLng, $routing, $hooks, $events);
-
-
-
-
-			$instance = new rifInstance($core);
-			$response = new rifResponse($core, $instance);
+			$instance = new rifInstance($rifCore);
+			$response = new rifResponse($rifCore, $instance);
 		}catch(rifExceptionCallable $e){
 			$error = new rifErr($e);
 			if(isset($core->core['routing']) && $core->core['routing']->route['response'] === "json"){
@@ -45,7 +37,7 @@ class riframework{
 
 	public function shell($argv){
 		$lang = new rifLng(LANG);
-		$config = new rifConfig($lang);
+		$config = new rifConfigLoader($lang);
 		$shell = new rifShell(new rifCore($config,$lang));
 		$shell->execute($argv);
 	}

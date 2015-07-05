@@ -9,9 +9,9 @@ class rifController{
 	private $globalVars = array();
 
 	public function __construct(rifCore $rifCore){
-		$this->config = $rifCore->core['config'];
-		$this->route = $rifCore->core['routing']->route;
-		$this->hooks = $rifCore->core['hooks'];
+		$this->config = $rifCore->getConfig()->getConfig();
+		$this->route = $rifCore->getRouting()->getRoute();
+		$this->hooks = $rifCore->getHooks();
 	}
 	
 	public function setVar($var, $val){

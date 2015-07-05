@@ -8,10 +8,10 @@ class autoloader{
 			if(!class_exists($class)){
 				$mainPath = dirname(dirname(dirname(__FILE__)));
 				$paths = array(
+					$mainPath."/rif/types",
 					$mainPath."/rif",
 					$mainPath."/rif/logger",
 					$mainPath."/rif/exception",
-					$mainPath."/rif/configuration",
 					$mainPath."/rif/controller",
 					$mainPath."/rif/database",
 					$mainPath."/rif/model",

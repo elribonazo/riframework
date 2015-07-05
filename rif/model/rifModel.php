@@ -35,11 +35,11 @@ class rifModel extends mysql{
 	 */
 	public function __construct(rifCore $rifCore, $model){
 		$this->model = $model;
-		$this->lng = $rifCore->core['lng'];
+		$this->lng = $rifCore->getLng();
 		parent::__construct($rifCore);
 		$this->getModelClassAnnotations();
 		$this->pdoHelper = new pdoHelper($this->lng);		
-		$this->config = $rifCore->core['config'];
+		$this->config = $rifCore->getConfig()->getConfig();
 	}
 
 	/**

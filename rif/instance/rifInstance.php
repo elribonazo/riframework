@@ -14,21 +14,24 @@ class rifInstance{
 	private $lng;
 
 	public function __construct(rifCore $rifCore){
-		$rifRouting = $rifCore->core['routing'];
-		$rifConfig = $rifCore->core['config'];
-		$rifHooks = $rifCore->core['hooks'];
-		$this->lng = $rifCore->core['lng'];
-		$params = $this->getMethodParameters($rifRouting);
+		$this->_setLng($rifCore->getLng());
+		$rifRouting = $rifCore->getRouting();
+		$rifConfig = $rifCore->getConfig()->getConfig();
+		$rifHooks = $rifCore->getHooks();
+		$routeController = $rifRouting->getRoute()['controller'];
 		$rifController = "rifController";
-		$instance = new $rifRouting->route['controller']();
 		$rifModel = "rifModel";
-		$this->loadPlugins($rifCore);
+		$this->loadPlugins($rifHooks);
+
+		$instance = new $routeController();
 		$rifController = new $rifController($rifCore);
-		$instance->controller = $rifController;
+		$instance->controller = $rifController;	
 		$instance = $this->loadRecursiveModules($instance, $rifModel, $rifCore);
 		$instance->hooks =  $rifHooks;
-		$instance->lng = $rifCore->core['lng'];
-		$controllerResponse = call_user_func_array(array($instance, $rifRouting->route['action']), $params);
+		$instance->lng = $rifCore->getLng();
+		$params = $this->getMethodParameters($rifRouting);
+		$controllerResponse = call_user_func_array(array($instance, $rifRouting->getRoute()['action']), $params);
+
 		$instance = $this->includeGlobalVars($controllerResponse, $rifRouting, $instance, $params);
 		$this->instance = $instance;
 	}
@@ -42,11 +45,13 @@ class rifInstance{
 	}
 
 	private function getMethodGlobalVariables(rifRouting $rifRouting, $instance, $inputVars){
-		$controller = $rifRouting->route['controller'];
-		$action = $rifRouting->route['action'];
+		$controller = $rifRouting->getRoute()['controller'];
+		$action = $rifRouting->getRoute()['action'];
 		$class = new ReflectionClass($controller);
 		$methodAnotations = rifAnotations::getAnnotations($class->getMethod($action)->getDocComment());
 		$globals = array();
+
+
 		if(isset($methodAnotations['global'])){
 			if(is_array($methodAnotations['global'])){
 				foreach($methodAnotations['global'] as $param){
@@ -81,7 +86,7 @@ class rifInstance{
 				$methodInputParameters = $method->getParameters();
 				for($i=0;$i<count($methodInputParameters);$i++){
 					if($anotationParams[2] === $methodInputParameters[$i]->name){
-						$globals[$anotationParams[0]] = $inputVars[$i];
+						$globals[$anotationParams[0]] = (isset($inputVars[$i]) && !is_empty($inputVars[$i])) ? $inputVars[$i] : null;
 					}
 				}
 			}
@@ -93,6 +98,7 @@ class rifInstance{
 		for($i = 4; $i < count($anotationParams); $i++){
 			$callParams[] = $anotationParams[$i];
 		}
+
 		if(isset($instance->$anotationParams[2]) && method_exists($instance->$anotationParams[2], $anotationParams[3])){
 			$globals[$anotationParams[0]] = call_user_func_array(array($instance->$anotationParams[2],$anotationParams[3]), $callParams);
 		}
@@ -111,7 +117,7 @@ class rifInstance{
 	 * @param  rifCore $rifCore
 	 * @return instance
 	 */
-	private function loadRecursiveModules($instance, $rifModel, $rifCore){
+	private function loadRecursiveModules($instance, $rifModel, rifCore $rifCore){
 		if(isset($instance->models)){
 			foreach($instance->models as $model){
 				$instance->$model = new $rifModel($rifCore, new $model);
@@ -120,7 +126,7 @@ class rifInstance{
 		if(isset($instance->components)){
 			foreach($instance->components as $component){
 				$instanceComponent = $this->loadRecursiveModules(new $component(), $rifModel, $rifCore);
-				$instanceComponent->config = $rifCore->core['config'];
+				$instanceComponent->config = $rifCore->getConfig()->getConfig();
 				if(isset($instanceController->models)){
 					foreach($instanceComponent->models as $extraModel){
 						$instanceComponent->$extraModel = new $rifModel($rifCore, new $extraModel);
@@ -137,8 +143,8 @@ class rifInstance{
 	 * @return array
 	 */
 	private function getMethodParameters(rifRouting $rifRouting){
-		$controller = $rifRouting->route['controller'];
-		$action = $rifRouting->route['action'];
+		$controller = $rifRouting->getRoute()['controller'];
+		$action = $rifRouting->getRoute()['action'];
 		$class = new ReflectionClass($controller);
 		$method = $class->getMethod($action);
 		$required_params = array();
@@ -154,7 +160,7 @@ class rifInstance{
 		}
 		$parameters = $method->getParameters();
 		$params_new = array();
-		$params_old = $rifRouting->route['vars'];
+		$params_old = $rifRouting->getRoute()['vars'];
 		for($i = 0; $i<count($parameters);$i++){
 			$key = $parameters[$i]->getName();
 			$headerKey = "HTTP_".strtoupper($key);
@@ -177,10 +183,8 @@ class rifInstance{
 		return $params_new;
 	}
 
-	private function loadPlugins(rifCore $rifCore){
-		$config = $rifCore->core['config'];
-		$hooks = $rifCore->core['hooks'];
-		$plugins = $this->loadPluginDirectories($config);
+	private function loadPlugins(rifHooks $hooks){
+		$plugins = $this->loadPluginDirectories();
 		foreach($plugins as $plugin){
 			if($plugin !== "." && $plugin !== ".."){
 				$matches = array();
@@ -193,7 +197,7 @@ class rifInstance{
 		}
 	}
 
-	private function loadPlugin($plugin, hooks $hooks){
+	private function loadPlugin($plugin, rifHooks $hooks){
 		$plugin = basename($plugin);
 		$pluginObj = null;
 		$rifPlugin = "rifPlugin";
@@ -224,10 +228,59 @@ class rifInstance{
 		return $method->name;
 	}
 
-	private function loadPluginDirectories(rifConfig $config){
-		if(file_exists(PATH."/app/plugins")){
-			return glob(PATH."/app/plugins/" . '*.{php}',GLOB_BRACE);
+	private function loadPluginDirectories(){
+		$file = new rifFile($this->getLng(),PATH."/app/plugins");
+		if($file->getExists()){
+			return glob($file->getPath().'/*.{php}',GLOB_BRACE);
 		}
 	}
+
+    /**
+     * Gets the value of instance.
+     *
+     * @return mixed
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
+
+    /**
+     * Sets the value of instance.
+     *
+     * @param mixed $instance the instance
+     *
+     * @return self
+     */
+    public function setInstance($instance)
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Gets the value of lng.
+     *
+     * @return mixed
+     */
+    public function getLng()
+    {
+        return $this->lng;
+    }
+
+    /**
+     * Sets the value of lng.
+     *
+     * @param mixed $lng the lng
+     *
+     * @return self
+     */
+    private function _setLng($lng)
+    {
+        $this->lng = $lng;
+
+        return $this;
+    }
 }
 ?>

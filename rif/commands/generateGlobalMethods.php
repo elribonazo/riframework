@@ -27,7 +27,8 @@ class generateGlobalMethods{
 	}
 
 	private function getContent(){
-		$routes = $this->rifCore->core['config']->routes;
+		$routes = $this->rifCore->getConfig()->getConfig()['routes'];
+		echo json_encode($routes);
 		$template = $this->loadMethodTemplate("request.js");
 		foreach($routes as $route){
 			if($route->response !== "json") continue;

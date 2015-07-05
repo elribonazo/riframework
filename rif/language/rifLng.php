@@ -1,7 +1,6 @@
 <?
 class rifLng{
 
-	private $config;
 	private $langCode;
 	private $poParser;
 	private $fileHandler;

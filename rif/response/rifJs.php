@@ -1,12 +1,10 @@
 <?
 class rifJs{
 	
-	private $rifCore;
 	private $global = "rif";
 	private $content = "";
 
-	public function __construct(rifCore $rifCore, $globals){
-		$this->rifCore = $rifCore;
+	public function __construct($globals){
 		$this->content .= "\n"."(function(".$this->global."){"."\n";
 		$this->content .= "   \"use strict\";"."\n";
 		if(isset($globals['vars'])){

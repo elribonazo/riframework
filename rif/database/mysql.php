@@ -14,18 +14,19 @@ class mysql{
 	 * [__construct description]
 	 */
 	public function __construct(rifCore $rifCore){
-		$config = $rifCore->core['config'];
-		$this->lng = $rifCore->core['lng'];
-		$db_host = $config->framework['database']['server'];
-		$db_user = $config->framework['database']['user'];
-		$db_name = $config->framework['database']['database'];
-		$db_pass = $config->framework['database']['pass'];
+		$config = $rifCore->getConfig()->getConfig();
+		$this->lng = $rifCore->getLng();
+		$db_host = $config->getHost();
+		$db_user = $config->getUser();
+		$db_name = $config->getDatabase();
+		$db_pass = $config->getPassword();
 		try{
-			$this->pdo = new PDO('mysql:host='.$db_host.';dbname=' . $db_name, $db_user,$db_pass);
+			$connection = 'mysql:host='.$db_host.';dbname=' . $db_name;
+			$this->pdo = new PDO($connection,$db_user,$db_pass);
 			$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		} catch(PDOException $e) {
 			rifException::instanceException(array(
-				"message" => $this->lng->__("Database connection problem")
+				"message" => $this->lng->__("Database connection problem : __error__",array("error"=>$e->getMessage()))
 			));
 		}
 	}
