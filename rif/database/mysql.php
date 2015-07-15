@@ -14,7 +14,7 @@ class mysql{
 	 * [__construct description]
 	 */
 	public function __construct(rifCore $rifCore){
-		$config = $rifCore->getConfig()->getConfig();
+		$config = $rifCore->getConfig();
 		$this->lng = $rifCore->getLng();
 		$db_host = $config->getHost();
 		$db_user = $config->getUser();

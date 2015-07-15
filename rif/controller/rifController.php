@@ -1,7 +1,6 @@
 <?php 
 class rifController{
 
-	private $adminNavigation = array();
 	private $vars = array();
 	private $hooks;
 	private $route;
@@ -25,5 +24,18 @@ class rifController{
 	public function getVars(){
 		return array("vars" =>$this->vars, "globalVars" => $this->globalVars);
 	}
+
+	public function newComponent($component, $args){
+		try{
+			$reflectionClass = new ReflectionClass($component);
+			$args['config'] = $this->config;
+			$reflectionClass->newInstance($args);
+    	}catch(Exception $e){
+    		rifException::componentLoaderException(array(
+				'message'=> $this->lng->__("The component __component__ could not be loaded",array("component"=>$component))
+			));
+    	}
+	}
+	
 }
 ?>

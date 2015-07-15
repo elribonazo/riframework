@@ -20,7 +20,7 @@ class rifFile{
 		if(!file_exists($this->getPath())){
 			if($this->getCheckPath()){
 				rifException::fileException(array(
-					'message' => $this->getLng()->__("The .ini file (__file__) does not exist.",array("file"=>$this->getPath()))
+					'message' => $this->getLng()->__("The file (__file__) does not exist.",array("file"=>$this->getPath()))
 				));
 			}
 			$this->_setExists(false);

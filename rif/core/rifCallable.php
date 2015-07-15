@@ -6,9 +6,9 @@ class rifCallable{
 	}
   
 	public function __call($name, $args) {
-    if (is_callable($this->$name)) {
+    if (is_callable($$name)) {
       array_unshift($args, $this);
-      return call_user_func_array($this->$name, $args);
+      return call_user_func_array($name, $args);
     }else{
       rifException::callableException(array(
         'code'=>10,

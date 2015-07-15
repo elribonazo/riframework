@@ -8,7 +8,7 @@ class rifRouting{
 	public function __construct(rifLng $lng, rifRequest $request, $routes){
 		if(!is_array($routes)){
 			rifException::configException(array(
-				'message'=> $this->lng->__("Invalid routes format")
+				'message'=> $lng->__("Invalid routes format")
 			));
 		}
 		$foundRoute = $this->findRoute($request, $routes);

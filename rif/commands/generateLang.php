@@ -3,8 +3,8 @@
  * @param 0 lang
  */
 class generateLang{
-	public function run(rifCore $core){
-		lngGenerator::generate($core,$this->lang);
+	public function run(){
+		lngGenerator::generate($this->rifCore,$this->lang);
 	}
 }
 ?>

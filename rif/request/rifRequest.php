@@ -13,6 +13,7 @@ class rifRequest{
 	 * [getRequestVars description]
 	 */
 	public function setRequestVars(){
+        
 		$this->_setMethod($_SERVER['REQUEST_METHOD']);
 		if(!isset($_GET['_route'])){
 			$this->_setUrl("/");
@@ -29,6 +30,7 @@ class rifRequest{
 		foreach($_GET as $var => $val){
 			$this->_setVar($var,$val);
 		}
+
 		if($this->method === "PUT" || $this->method === "DELETE"){
 			if($this->method === "PUT"){
 				$_PUT = array();

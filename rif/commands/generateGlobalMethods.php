@@ -1,13 +1,11 @@
 <?php
 class generateGlobalMethods{
 	
-	private $rifCore;
 	private $reflection;
 	private $content = "";
 
-	public function run(rifCore $core){
-		$this->rifCore = $core;
-		$this->getContent($core);
+	public function run(rifCore $rifCore){
+		$this->getContent($rifCore);
 
 	}
 
@@ -26,15 +24,14 @@ class generateGlobalMethods{
 		fclose($fp);
 	}
 
-	private function getContent(){
-		$routes = $this->rifCore->getConfig()->getConfig()['routes'];
-		echo json_encode($routes);
+	private function getContent(rifCore $rifCore){
+		$routes = $rifCore->getConfig()->getRoutes();
 		$template = $this->loadMethodTemplate("request.js");
 		foreach($routes as $route){
-			if($route->response !== "json") continue;
-			$this->newMethod($route,$template);
+			if($route->getResponse() !== "json") continue;
+			$this->newMethod($route,$template,$rifCore);
 		}
-		$this->writeResult($this->content,PATH."/app/template/".$this->rifCore->core['config']->framework['main']['theme']);
+		$this->writeResult($this->content,PATH."/app/template/".$rifCore->getConfig()->getTheme());
 	}
 
 	private function setReflectionClass($controller){
@@ -47,17 +44,17 @@ class generateGlobalMethods{
 		}
 	}
 
-	private function newMethod(rifRoute $call,$template){
-		$controller = $call->controller."Controller";
-		$action = $call->action;
-		$method = $call->method;
+	private function newMethod(rifRoute $call,$template,rifCore $rifCore){
+		$controller = $call->getController()."Controller";
+		$action = $call->getAction();
+		$method = $call->getMethod();
 		$this->setReflectionClass($controller);
 		$methodParams = $this->getMethodParams($action);
 		$vars = array();
-		$vars['requestUrl'] = $this->rifCore->core['config']->framework['main']['url'] . $call->url;
-		$vars['requestType'] = $call->method;
+		$vars['requestUrl'] = $rifCore->getConfig()->getUrl() . $call->getUrl();
+		$vars['requestType'] = $call->getMethod();
 		$vars['required'] = json_encode($methodParams);
-		$vars['functionName'] = "xhr".ucfirst($call->action);
+		$vars['functionName'] = "xhr".ucfirst($action);
 		$matches = array();
 		if(preg_match_all("/(\[([a-zA-Z0-9_-]+)\,([a-zA-Z0-9]+)\]+)/",$vars['requestUrl'],$matches)){
 			$placeholders = array();
@@ -96,7 +93,6 @@ class generateGlobalMethods{
 						$placeholders[] = "/\{\{".$placeholder."\}\}/";
 						$replacements[] = $vars[$placeholder];
 					}
-					
 				}
 			}
 			$template = preg_replace($placeholders,$replacements,$template);

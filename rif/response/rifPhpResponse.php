@@ -6,14 +6,12 @@ class rifPhpResponse{
 	private $instance = array();
 
 	public function __construct(rifCore $rifCore, rifInstance $rifInstance, $scripts){
-		$theme = $rifCore->getConfig()->getConfig()->getTheme();
+		$theme = $rifCore->getConfig()->getTheme();
 		$this->lng = $rifCore->getLng();
 		$this->event = $rifCore->getEvents();
 		$this->instance = $rifInstance;
 		$route = $rifCore->getRouting()->getRoute();
-
 		$templatePath = dirname(dirname(dirname(__FILE__)))."/app/template/".$theme."/";
-
 		$this->path = $templatePath;
 		$controllerPath = str_replace("Controller","",$route['controller']);
 		$templateFile = $templatePath.$controllerPath."/".$route['action'].".php";

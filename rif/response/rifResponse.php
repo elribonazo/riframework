@@ -12,7 +12,7 @@ class rifResponse{
 
 	private function processResponse(){
 		$rifRouting = $this->rifCore->getRouting()->getRoute();
-		$frameworkMainConfig = $this->rifCore->getConfig()->getConfig();
+		$frameworkMainConfig = $this->rifCore->getConfig();
 		$response = (isset($rifRouting['response']))? $rifRouting['response'] : "html";
 		if($response === "json"){
 			$json = new rifJsonResponse();

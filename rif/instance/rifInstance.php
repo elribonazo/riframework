@@ -16,15 +16,15 @@ class rifInstance{
 	public function __construct(rifCore $rifCore){
 		$this->_setLng($rifCore->getLng());
 		$rifRouting = $rifCore->getRouting();
-		$rifConfig = $rifCore->getConfig()->getConfig();
+		$rifConfig = $rifCore->getConfig();
 		$rifHooks = $rifCore->getHooks();
 		$routeController = $rifRouting->getRoute()['controller'];
 		$rifController = "rifController";
 		$rifModel = "rifModel";
 		$this->loadPlugins($rifHooks);
-
 		$instance = new $routeController();
 		$rifController = new $rifController($rifCore);
+		$instance->config = $rifConfig;
 		$instance->controller = $rifController;	
 		$instance = $this->loadRecursiveModules($instance, $rifModel, $rifCore);
 		$instance->hooks =  $rifHooks;
@@ -50,8 +50,6 @@ class rifInstance{
 		$class = new ReflectionClass($controller);
 		$methodAnotations = rifAnotations::getAnnotations($class->getMethod($action)->getDocComment());
 		$globals = array();
-
-
 		if(isset($methodAnotations['global'])){
 			if(is_array($methodAnotations['global'])){
 				foreach($methodAnotations['global'] as $param){
@@ -126,7 +124,7 @@ class rifInstance{
 		if(isset($instance->components)){
 			foreach($instance->components as $component){
 				$instanceComponent = $this->loadRecursiveModules(new $component(), $rifModel, $rifCore);
-				$instanceComponent->config = $rifCore->getConfig()->getConfig();
+				$instanceComponent->config = $rifCore->getConfig();
 				if(isset($instanceController->models)){
 					foreach($instanceComponent->models as $extraModel){
 						$instanceComponent->$extraModel = new $rifModel($rifCore, new $extraModel);

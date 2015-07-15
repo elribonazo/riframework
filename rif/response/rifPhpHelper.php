@@ -17,8 +17,8 @@ class rifPhpHelper{
 		$this->vars = $instance->instance['vars'];
 		$this->rifScripts = $scripts;
 		$this->lng = $rifCore->getLng();
-		$this->vars['path'] = str_replace(PATH,$rifCore->getConfig()->getConfig()->getUrl(), $path);
-		$this->vars['mainPath'] = $rifCore->getConfig()->getConfig()->getUrl();
+		$this->vars['path'] = str_replace(PATH,$rifCore->getConfig()->getUrl(), $path);
+		$this->vars['mainPath'] = $rifCore->getConfig()->getUrl();
 		$this->hooks->add_filter('templateVars', array($this, "addTemplateVars"));
 	}
 
