@@ -12,8 +12,9 @@ class riframework{
 			$rifLng = new rifLng(LANG);
 			$rifRequest = new rifRequest($rifLng);
 			$rifCore->_setLng($rifLng);
-			$rifCore->_setConfig(new rifConfigLoader($rifLng));
-			$rifCore->_setRouting(new rifRouting($rifLng, $rifRequest,$rifCore->getConfig()->getConfig()->getRoutes()));
+			$rifConfig = new rifConfig($rifLng);
+			$rifCore->_setConfig($rifConfig);
+			$rifCore->_setRouting(new rifRouting($rifLng, $rifRequest,$rifCore->getConfig()->getRoutes()));
 			$rifCore->_setHooks(new rifHooks($rifLng));
 			$rifCore->_setEvents(new rifEvent());
 			if($rifCore->getRouting()->getError()){
@@ -36,9 +37,14 @@ class riframework{
 	}
 
 	public function shell($argv){
-		$lang = new rifLng(LANG);
-		$config = new rifConfigLoader($lang);
-		$shell = new rifShell(new rifCore($config,$lang));
+		$rifCore = new rifCore();
+		$rifLng = new rifLng(LANG);
+		$rifCore->_setLng($rifLng);
+		$rifConfig = new rifConfig($rifLng);
+		$rifCore->_setConfig($rifConfig);
+		$rifCore->_setHooks(new rifHooks($rifLng));
+		$rifCore->_setEvents(new rifEvent());
+		$shell = new rifShell($rifCore);
 		$shell->execute($argv);
 	}
 }
